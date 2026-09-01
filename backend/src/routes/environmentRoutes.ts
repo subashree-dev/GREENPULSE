@@ -9,11 +9,15 @@ const CACHE_TTL = 60;
 
 router.get("/", async (_req, res) => {
   try {
-    const cachedData = await redisClient.get(CACHE_KEY);
+    const client = redisClient;
 
-    if (cachedData) {
-      console.log("Environment data served from Redis");
-      return res.json(JSON.parse(cachedData));
+    if (client && client.isOpen) {
+      const cachedData = await client.get(CACHE_KEY);
+
+      if (cachedData) {
+        console.log("Environment data served from Redis");
+        return res.json(JSON.parse(cachedData));
+      }
     }
 
     const result = await pool.query(`
@@ -29,13 +33,19 @@ router.get("/", async (_req, res) => {
       ORDER BY recorded_date DESC, id
     `);
 
-    await redisClient.setEx(
-      CACHE_KEY,
-      CACHE_TTL,
-      JSON.stringify(result.rows),
-    );
+    if (client && client.isOpen) {
+      await client.setEx(
+        CACHE_KEY,
+        CACHE_TTL,
+        JSON.stringify(result.rows),
+      );
 
-    console.log("Environment data loaded from PostgreSQL and cached in Redis");
+      console.log(
+        "Environment data loaded from PostgreSQL and cached in Redis",
+      );
+    } else {
+      console.log("Environment data loaded from PostgreSQL");
+    }
 
     return res.json(result.rows);
   } catch (error) {

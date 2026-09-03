@@ -2,6 +2,8 @@ import { connectRedis } from "./config/redis";
 import express from "express";
 import cors from "cors";
 
+import initDb from "./config/initDb";
+
 import parkRoutes from "./routes/parkRoutes";
 import treeRoutes from "./routes/treeRoutes";
 import maintenanceRoutes from "./routes/maintenanceRoutes";
@@ -29,6 +31,8 @@ app.use("/api/environment", environmentRoutes);
 
 async function startServer() {
   try {
+    await initDb();
+
     await connectRedis();
 
     app.listen(PORT, () => {

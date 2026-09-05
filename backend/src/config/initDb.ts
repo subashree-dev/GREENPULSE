@@ -4,7 +4,9 @@ const initDb = async () => {
   try {
     console.log("Initializing GREENPULSE database...");
 
-    // USERS
+    // ============================================
+    // 1. USERS
+    // ============================================
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -15,7 +17,9 @@ const initDb = async () => {
       );
     `);
 
-    // PARKS
+    // ============================================
+    // 2. PARKS
+    // ============================================
     await pool.query(`
       CREATE TABLE IF NOT EXISTS parks (
         id SERIAL PRIMARY KEY,
@@ -27,7 +31,7 @@ const initDb = async () => {
       );
     `);
 
-    // Add columns required by parkRoutes
+    // Columns required by parkRoutes
     await pool.query(`
       ALTER TABLE parks
         ADD COLUMN IF NOT EXISTS area_sq_m DECIMAL(12,2),
@@ -36,7 +40,9 @@ const initDb = async () => {
         ADD COLUMN IF NOT EXISTS irrigation_status VARCHAR(50);
     `);
 
-    // TREES
+    // ============================================
+    // 3. TREES
+    // ============================================
     await pool.query(`
       CREATE TABLE IF NOT EXISTS trees (
         id SERIAL PRIMARY KEY,
@@ -50,7 +56,7 @@ const initDb = async () => {
       );
     `);
 
-    // Add columns required by treeRoutes
+    // Columns required by treeRoutes
     await pool.query(`
       ALTER TABLE trees
         ADD COLUMN IF NOT EXISTS age_years INTEGER,
@@ -63,7 +69,9 @@ const initDb = async () => {
         ADD COLUMN IF NOT EXISTS last_inspection DATE;
     `);
 
-    // MAINTENANCE TASKS
+    // ============================================
+    // 4. MAINTENANCE TASKS
+    // ============================================
     await pool.query(`
       CREATE TABLE IF NOT EXISTS maintenance_tasks (
         id SERIAL PRIMARY KEY,
@@ -77,7 +85,7 @@ const initDb = async () => {
       );
     `);
 
-    // Add columns required by maintenanceRoutes
+    // Columns required by maintenanceRoutes
     await pool.query(`
       ALTER TABLE maintenance_tasks
         ADD COLUMN IF NOT EXISTS tree_id INTEGER REFERENCES trees(id) ON DELETE CASCADE,
@@ -86,7 +94,9 @@ const initDb = async () => {
         ADD COLUMN IF NOT EXISTS completed_at TIMESTAMP;
     `);
 
-    // CITIZEN REPORTS
+    // ============================================
+    // 5. CITIZEN REPORTS
+    // ============================================
     await pool.query(`
       CREATE TABLE IF NOT EXISTS citizen_reports (
         id SERIAL PRIMARY KEY,
@@ -99,7 +109,7 @@ const initDb = async () => {
       );
     `);
 
-    // Add columns required by reportRoutes
+    // Columns required by reportRoutes
     await pool.query(`
       ALTER TABLE citizen_reports
         ADD COLUMN IF NOT EXISTS location VARCHAR(255),
@@ -108,7 +118,9 @@ const initDb = async () => {
         ADD COLUMN IF NOT EXISTS priority VARCHAR(30) DEFAULT 'Medium';
     `);
 
-    // ENVIRONMENTAL INDICATORS
+    // ============================================
+    // 6. ENVIRONMENTAL INDICATORS
+    // ============================================
     await pool.query(`
       CREATE TABLE IF NOT EXISTS environmental_indicators (
         id SERIAL PRIMARY KEY,
@@ -120,7 +132,7 @@ const initDb = async () => {
       );
     `);
 
-    // Add columns required by environmentRoutes
+    // Columns required by environmentRoutes
     await pool.query(`
       ALTER TABLE environmental_indicators
         ADD COLUMN IF NOT EXISTS area VARCHAR(150),
@@ -128,6 +140,40 @@ const initDb = async () => {
         ADD COLUMN IF NOT EXISTS green_coverage_percent DECIMAL(5,2),
         ADD COLUMN IF NOT EXISTS water_availability VARCHAR(50),
         ADD COLUMN IF NOT EXISTS recorded_date DATE;
+    `);
+
+    // ============================================
+    // INDEXES
+    // ============================================
+
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_trees_park_id
+      ON trees(park_id);
+    `);
+
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_trees_health_status
+      ON trees(health_status);
+    `);
+
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_trees_risk_level
+      ON trees(risk_level);
+    `);
+
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_maintenance_status
+      ON maintenance_tasks(status);
+    `);
+
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_reports_status
+      ON citizen_reports(status);
+    `);
+
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_environmental_area
+      ON environmental_indicators(area);
     `);
 
     console.log("GREENPULSE database initialized successfully.");

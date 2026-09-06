@@ -25,15 +25,23 @@ function App() {
 
           <nav className="navigation">
             <NavLink
-  to="/reports"
-  className={({ isActive }) =>
-    isActive ? "nav-link active" : "nav-link"
-  }
->
-  <span>📋</span>
-  Reports
-</NavLink>
-
+              to="/"
+              className={({ isActive }) =>
+                isActive ? "nav-link active" : "nav-link"
+              }
+            >
+              <span>📊</span>
+              Dashboard
+            </NavLink>
+            <NavLink
+              to="/reports"
+              className={({ isActive }) =>
+                isActive ? "nav-link active" : "nav-link"
+              }
+            >
+              <span>📋</span>
+              Reports
+            </NavLink>
 
             <NavLink
               to="/parks"
@@ -88,7 +96,7 @@ function App() {
 
         <div className="main-area">
           <Routes>
-<Route path="/reports" element={<Reports />} />
+            <Route path="/reports" element={<Reports />} />
             <Route path="/" element={<Dashboard />} />
 
             <Route path="/parks" element={<Parks />} />

@@ -105,11 +105,21 @@ function Dashboard() {
   // MAINTENANCE PRIORITY
   const priorityItems = trees
     .map((tree) => {
+      const park = parks.find((park) => park.id === tree.park_id);
+
+      const environmentalData = environment.find(
+        (item) => item.area?.toLowerCase() === park?.location?.toLowerCase(),
+      );
+
+      const environmentalRiskScore = environmentalData
+        ? calculateRiskScore(environmentalData)
+        : 20;
+
       const priorityScore = calculatePriorityScore({
         healthScore: Number(tree.health_score),
-        environmentalRiskScore: averageEnvironmentalRisk,
-        waterAvailability: "Moderate",
-        condition: "Fair",
+        environmentalRiskScore,
+        waterAvailability: environmentalData?.water_availability || "Adequate",
+        condition: park?.condition || "Fair",
       });
 
       return {

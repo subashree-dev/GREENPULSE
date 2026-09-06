@@ -3,10 +3,31 @@ import { getTrees } from "../services/api";
 
 function Trees() {
   const [trees, setTrees] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [riskFilter, setRiskFilter] = useState("All");
 
   useEffect(() => {
     getTrees().then(setTrees);
   }, []);
+
+  const riskLevels = [
+    "All",
+    ...Array.from(
+      new Set(trees.map((tree) => tree.risk_level).filter(Boolean)),
+    ),
+  ];
+
+  const filteredTrees = trees.filter((tree) => {
+    const search = searchTerm.toLowerCase();
+
+    const matchesSearch =
+      tree.species?.toLowerCase().includes(search) ||
+      tree.risk_level?.toLowerCase().includes(search);
+
+    const matchesRisk = riskFilter === "All" || tree.risk_level === riskFilter;
+
+    return matchesSearch && matchesRisk;
+  });
 
   return (
     <div className="page">
@@ -18,11 +39,33 @@ function Trees() {
       <main className="page-content">
         <div className="section-title">
           <h2>Tree Health Monitoring</h2>
-          <p>{trees.length} trees currently monitored</p>
+          <p>
+            {filteredTrees.length} of {trees.length} trees displayed
+          </p>
+        </div>
+
+        <div className="tree-filters">
+          <input
+            type="text"
+            placeholder="Search tree species or risk level..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+
+          <select
+            value={riskFilter}
+            onChange={(e) => setRiskFilter(e.target.value)}
+          >
+            {riskLevels.map((risk) => (
+              <option key={risk} value={risk}>
+                {risk === "All" ? "All Risk Levels" : risk}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="tree-grid">
-          {trees.map((tree) => {
+          {filteredTrees.map((tree) => {
             const score = Number(tree.health_score);
 
             let healthClass = "tree-low";
@@ -55,6 +98,12 @@ function Trees() {
             );
           })}
         </div>
+
+        {filteredTrees.length === 0 && (
+          <div className="empty-state">
+            <p>No trees match your search or filter.</p>
+          </div>
+        )}
       </main>
     </div>
   );
